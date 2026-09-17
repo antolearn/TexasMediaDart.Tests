@@ -1,13 +1,24 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
+import fs from 'fs';
 import path from 'path';
 
 const environment = process.env.TEST_ENV || 'dev';
 
 // Load environment configuration
-dotenv.config({
-  path: path.resolve(process.cwd(), `config/.env.${environment}`)
-})
+
+
+const envFile = path.resolve(
+  process.cwd(),
+  `config/.env.${environment}`
+);
+
+if (fs.existsSync(envFile)) {
+  dotenv.config({
+    path: envFile,
+    quiet: true
+  });
+}
 
 /**
  * Read environment variables from file.
