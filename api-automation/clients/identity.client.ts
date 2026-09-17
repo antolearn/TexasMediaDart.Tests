@@ -12,8 +12,11 @@ import {
 import { LogoutRequest } from '../models/logout.models';
 import {
   RegisterRequest,
-  RegisterResponse
+  RegisterResponse,
+  RegisterErrorResponse,
+  RegisterValidationErrorResponse
 } from '../models/register.models';
+
 
 export class IdentityApiClient {
 
@@ -110,7 +113,10 @@ export class IdentityApiClient {
         registerRequest: RegisterRequest
         ): Promise<{
         response: APIResponse;
-        body: RegisterResponse;
+        body:
+            | RegisterResponse
+            | RegisterErrorResponse
+            | RegisterValidationErrorResponse;
         }> {
 
         const response = await this.request.post(
@@ -120,7 +126,10 @@ export class IdentityApiClient {
             }
         );
 
-        const body = await response.json() as RegisterResponse;
+        const body = await response.json() as
+            | RegisterResponse
+            | RegisterErrorResponse
+            | RegisterValidationErrorResponse;
 
         return {
             response,
