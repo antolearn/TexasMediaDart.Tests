@@ -2,7 +2,12 @@
   "name": "tests",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test:api:dev": "cross-env TEST_ENV=dev playwright test --project=api",
+    "test:api:smoke:dev": "cross-env TEST_ENV=dev playwright test --project=api --grep @smoke",
+    "test:api:regression:dev": "cross-env TEST_ENV=dev playwright test --project=api --grep @regression",
+    "test:api:prod": "cross-env TEST_ENV=prod playwright test --project=api --grep @smoke --grep-invert \"@dev-only|@data-creation\""
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -10,6 +15,8 @@
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@types/node": "^22.20.3",
-    "dotenv": "^17.4.2"
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.4.2",
+    "typescript": "^7.0.2"
   }
 }

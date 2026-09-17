@@ -1,9 +1,22 @@
 import { APIRequestContext, APIResponse } from '@playwright/test';
 import {
   LoginRequest,
-  LoginResponse
+  LoginResponse,
+  LoginErrorResponse
 } from '../models/login.models';
 import { MeResponse } from '../models/me.models';
+import {
+  RefreshTokenRequest,
+  RefreshTokenErrorResponse
+} from '../models/refresh-token.models';
+import { LogoutRequest } from '../models/logout.models';
+import {
+  RegisterRequest,
+  RegisterResponse,
+  RegisterErrorResponse,
+  RegisterValidationErrorResponse
+} from '../models/register.models';
+
 
 export class IdentityApiClient {
 
@@ -24,7 +37,9 @@ export class IdentityApiClient {
 
   async login(
     loginRequest: LoginRequest
-  ): Promise<{ response: APIResponse; body: LoginResponse }> {
+    ): Promise<{
+            response: APIResponse;
+            body: LoginResponse | LoginErrorResponse;}> {
 
     const response = await this.request.post(
       `${this.baseUrl}/api/auth/login`,
@@ -33,7 +48,8 @@ export class IdentityApiClient {
       }
     );
 
-    const body = await response.json() as LoginResponse;
+    const body = await response.json() as
+        LoginResponse | LoginErrorResponse;
 
     return {
       response,
@@ -60,5 +76,64 @@ export class IdentityApiClient {
         response,
         body
     };
+    }
+
+    async refreshToken(
+        refreshRequest: RefreshTokenRequest
+        ): Promise<{ response: APIResponse; body: LoginResponse | RefreshTokenErrorResponse; }> {
+
+        const response = await this.request.post(
+            `${this.baseUrl}/api/auth/refresh`,
+            {
+            data: refreshRequest
+            }
+        );
+
+        const body = await response.json() as
+            LoginResponse | RefreshTokenErrorResponse;
+
+        return {
+            response,
+            body
+        };
+    }
+
+    async logout(
+        logoutRequest: LogoutRequest
+        ): Promise<APIResponse> {
+
+        return await this.request.post(
+            `${this.baseUrl}/api/auth/logout`,
+            {
+            data: logoutRequest
+            }
+        );
+    }
+    async register(
+        registerRequest: RegisterRequest
+        ): Promise<{
+        response: APIResponse;
+        body:
+            | RegisterResponse
+            | RegisterErrorResponse
+            | RegisterValidationErrorResponse;
+        }> {
+
+        const response = await this.request.post(
+            `${this.baseUrl}/api/auth/register`,
+            {
+            data: registerRequest
+            }
+        );
+
+        const body = await response.json() as
+            | RegisterResponse
+            | RegisterErrorResponse
+            | RegisterValidationErrorResponse;
+
+        return {
+            response,
+            body
+        };
     }
 }

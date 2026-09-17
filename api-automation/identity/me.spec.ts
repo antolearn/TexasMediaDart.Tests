@@ -1,37 +1,27 @@
-import { test, expect } from '@playwright/test';
-import { IdentityApiClient } from '../clients/identity.client';
+import {
+  test,
+  expect
+} from '../fixtures/auth.fixture';
 
 test.describe('Identity API - About Me', () => {
 
-  test('should return current user with valid access token', async ({ request }) => {
+  test(
+    'should return current user with valid access token',
+    { tag: ['@smoke', '@regression']},
+    async ({ identityClient, authenticatedUser }) => {
 
-    const email = process.env.TEST_EMAIL;
-    const password = process.env.TEST_PASSWORD;
+      const meResult = await identityClient.getMe(
+        authenticatedUser.accessToken
+      );
 
-    expect(email).toBeTruthy();
-    expect(password).toBeTruthy();
+      expect(meResult.response.status()).toBe(200);
 
-    const identityClient = new IdentityApiClient(request);
+      expect(meResult.body.userId)
+        .toBe(authenticatedUser.userId);
 
-    // Step 1: Login
-    const loginResult = await identityClient.login({
-      email: email!,
-      password: password!
-    });
-
-    expect(loginResult.response.status()).toBe(200);
-    expect(loginResult.body.accessToken).toBeTruthy();
-
-    // Step 2: Use access token
-    const meResult = await identityClient.getMe(
-      loginResult.body.accessToken
-    );
-
-    // Step 3: Validate response
-    expect(meResult.response.status()).toBe(200);
-
-    expect(meResult.body.userId).toBeTruthy();
-    expect(meResult.body.email).toBe(email);
-  });
+      expect(meResult.body.email)
+        .toBe(authenticatedUser.email);
+    }
+  );
 
 });
