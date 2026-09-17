@@ -1,0 +1,40 @@
+name: API Test CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  api-smoke-tests:
+    name: DEV API Smoke Tests
+    runs-on: ubuntu-latest
+
+    environment: DEV
+
+    env:
+      TEST_ENV: dev
+      IDENTITY_BASE_URL: ${{ vars.IDENTITY_BASE_URL }}
+      TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
+      TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript validation
+        run: npx tsc --noEmit
+
+      - name: Run DEV API smoke tests
+        run: npm run test:api:smoke:dev
