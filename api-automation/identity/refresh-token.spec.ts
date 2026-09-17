@@ -7,7 +7,9 @@ import {
 
 test.describe('Identity API - Refresh Token', () => {
 
-  test('should refresh access token with valid refresh token', async ({ request }) => {
+  test('should refresh access token with valid refresh token', 
+    { tag: ['@smoke', '@regression'] },
+    async ({ request }) => {
 
     const email = process.env.TEST_EMAIL;
     const password = process.env.TEST_PASSWORD;
@@ -66,7 +68,9 @@ test.describe('Identity API - Refresh Token', () => {
     expect(meResult.body.email).toBe(email);
   });
 
-  test('should reject invalid refresh token', async ({ request }) => {
+  test('should reject invalid refresh token', 
+    { tag: ['@regression'] },
+    async ({ request }) => {
 
     const identityClient = new IdentityApiClient(request);
 

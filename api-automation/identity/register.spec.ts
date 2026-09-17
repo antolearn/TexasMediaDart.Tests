@@ -10,7 +10,9 @@ import {
 
 test.describe('Identity API - Registration', () => {
 
-  test('should register a new user and login successfully', async ({ request }) => {
+  test('should register a new user and login successfully', 
+    { tag: ['@regression','@data-creation','@dev-only'] },
+    async ({ request }) => {
 
     const identityClient = new IdentityApiClient(request);
 
@@ -70,7 +72,9 @@ test.describe('Identity API - Registration', () => {
     expect(meResult.body.email)
       .toBe(email);
   });
-  test('should reject registration with duplicate email', async ({ request }) => {
+  test('should reject registration with duplicate email', 
+    { tag: ['@regression','@dev-only'] },
+    async ({ request }) => {
 
     const email = process.env.TEST_EMAIL;
     const password = process.env.TEST_PASSWORD;
@@ -107,7 +111,9 @@ test.describe('Identity API - Registration', () => {
     expect(registerResult.body.detail)
         .toBe('A user with this email already exists.');
   });
-  test('should reject registration when passwords do not match', async ({ request }) => {
+  test('should reject registration when passwords do not match', 
+    { tag: ['@regression','@dev-only'] },
+    async ({ request }) => {
 
     const identityClient = new IdentityApiClient(request);
 
@@ -138,7 +144,9 @@ test.describe('Identity API - Registration', () => {
     expect(registerResult.body.errors.ConfirmPassword)
         .toContain('Password and confirm password must match.');
   });
-  test('should reject registration with invalid email format', async ({ request }) => {
+  test('should reject registration with invalid email format', 
+    { tag: ['@regression','@dev-only'] },
+     async ({ request }) => {
 
     const identityClient = new IdentityApiClient(request);
 

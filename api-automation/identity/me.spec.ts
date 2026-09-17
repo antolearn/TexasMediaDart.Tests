@@ -7,6 +7,7 @@ test.describe('Identity API - About Me', () => {
 
   test(
     'should return current user with valid access token',
+    { tag: ['@smoke', '@regression']},
     async ({ identityClient, authenticatedUser }) => {
 
       const meResult = await identityClient.getMe(

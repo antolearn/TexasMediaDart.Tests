@@ -7,7 +7,9 @@ import {
 
 test.describe('Identity API - Logout', () => {
 
-  test('should invalidate refresh token after logout', async ({ request }) => {
+  test('should invalidate refresh token after logout', 
+    { tag: ['@regression'] },
+    async ({ request }) => {
 
     const email = process.env.TEST_EMAIL;
     const password = process.env.TEST_PASSWORD;

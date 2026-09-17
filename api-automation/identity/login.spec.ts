@@ -7,7 +7,9 @@ import {
 
 test.describe('Identity API - Login', () => {
 
-  test('should login successfully with valid credentials', async ({ request }) => {
+  test('should login successfully with valid credentials', 
+    { tag: ['@smoke', '@regression']},
+    async ({ request }) => {
 
     const email = process.env.TEST_EMAIL;
     const password = process.env.TEST_PASSWORD;
@@ -36,7 +38,9 @@ test.describe('Identity API - Login', () => {
     expect(body.refreshToken).toBeTruthy();
     expect(body.refreshTokenExpiresAtUtc).toBeTruthy();
   });
-  test('should reject login with invalid password', async ({ request }) => {
+  test('should reject login with invalid password', 
+    { tag: ['@regression'] },
+    async ({ request }) => {
 
     const email = process.env.TEST_EMAIL;
 
@@ -60,7 +64,9 @@ test.describe('Identity API - Login', () => {
     expect(body.status).toBe(401);
     expect(body.detail).toBe('Invalid email or password.');
   });
-  test('should reject login with invalid email', async ({ request }) => {
+  test('should reject login with invalid email', 
+    { tag: ['@regression'] },
+    async ({ request }) => {
 
     const password = process.env.TEST_PASSWORD;
 
@@ -83,7 +89,6 @@ test.describe('Identity API - Login', () => {
     expect(body.title).toBe('Login failed.');
     expect(body.status).toBe(401);
     expect(body.detail).toBe('Invalid email or password.');
-});
-
+  });
 }
 );
