@@ -5,7 +5,11 @@ import {
   LoginErrorResponse
 } from '../models/login.models';
 import { MeResponse } from '../models/me.models';
-
+import {
+  RefreshTokenRequest,
+  RefreshTokenErrorResponse
+} from '../models/refresh-token.models';
+import { LogoutRequest } from '../models/logout.models';
 export class IdentityApiClient {
 
   private readonly request: APIRequestContext;
@@ -64,5 +68,37 @@ export class IdentityApiClient {
         response,
         body
     };
+    }
+
+    async refreshToken(
+        refreshRequest: RefreshTokenRequest
+        ): Promise<{ response: APIResponse; body: LoginResponse | RefreshTokenErrorResponse; }> {
+
+        const response = await this.request.post(
+            `${this.baseUrl}/api/auth/refresh`,
+            {
+            data: refreshRequest
+            }
+        );
+
+        const body = await response.json() as
+            LoginResponse | RefreshTokenErrorResponse;
+
+        return {
+            response,
+            body
+        };
+    }
+
+    async logout(
+        logoutRequest: LogoutRequest
+        ): Promise<APIResponse> {
+
+        return await this.request.post(
+            `${this.baseUrl}/api/auth/logout`,
+            {
+            data: logoutRequest
+            }
+        );
     }
 }
