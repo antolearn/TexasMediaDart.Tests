@@ -10,6 +10,11 @@ import {
   RefreshTokenErrorResponse
 } from '../models/refresh-token.models';
 import { LogoutRequest } from '../models/logout.models';
+import {
+  RegisterRequest,
+  RegisterResponse
+} from '../models/register.models';
+
 export class IdentityApiClient {
 
   private readonly request: APIRequestContext;
@@ -100,5 +105,26 @@ export class IdentityApiClient {
             data: logoutRequest
             }
         );
+    }
+    async register(
+        registerRequest: RegisterRequest
+        ): Promise<{
+        response: APIResponse;
+        body: RegisterResponse;
+        }> {
+
+        const response = await this.request.post(
+            `${this.baseUrl}/api/auth/register`,
+            {
+            data: registerRequest
+            }
+        );
+
+        const body = await response.json() as RegisterResponse;
+
+        return {
+            response,
+            body
+        };
     }
 }
