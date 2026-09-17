@@ -1,7 +1,8 @@
 import { APIRequestContext, APIResponse } from '@playwright/test';
 import {
   LoginRequest,
-  LoginResponse
+  LoginResponse,
+  LoginErrorResponse
 } from '../models/login.models';
 import { MeResponse } from '../models/me.models';
 
@@ -24,7 +25,9 @@ export class IdentityApiClient {
 
   async login(
     loginRequest: LoginRequest
-  ): Promise<{ response: APIResponse; body: LoginResponse }> {
+    ): Promise<{
+            response: APIResponse;
+            body: LoginResponse | LoginErrorResponse;}> {
 
     const response = await this.request.post(
       `${this.baseUrl}/api/auth/login`,
@@ -33,7 +36,8 @@ export class IdentityApiClient {
       }
     );
 
-    const body = await response.json() as LoginResponse;
+    const body = await response.json() as
+        LoginResponse | LoginErrorResponse;
 
     return {
       response,

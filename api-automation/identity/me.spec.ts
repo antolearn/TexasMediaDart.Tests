@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { IdentityApiClient } from '../clients/identity.client';
+import { isLoginResponse } from '../models/login.models';
 
 test.describe('Identity API - About Me', () => {
 
@@ -20,7 +21,13 @@ test.describe('Identity API - About Me', () => {
     });
 
     expect(loginResult.response.status()).toBe(200);
+    expect(isLoginResponse(loginResult.body)).toBe(true);
+
+    if (!isLoginResponse(loginResult.body)) {
+    throw new Error('Expected successful login response.');
+    }
     expect(loginResult.body.accessToken).toBeTruthy();
+
 
     // Step 2: Use access token
     const meResult = await identityClient.getMe(
