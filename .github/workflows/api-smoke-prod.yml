@@ -1,0 +1,64 @@
+name: PROD API Smoke
+
+on:
+  workflow_dispatch:
+
+jobs:
+  api-smoke-tests:
+    name: PROD API Smoke Tests
+    runs-on: ubuntu-latest
+
+    environment: PROD
+
+    env:
+      TEST_ENV: prod
+      IDENTITY_BASE_URL: ${{ vars.IDENTITY_BASE_URL }}
+      TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
+      TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate PROD configuration
+        shell: bash
+        run: |
+          if [ -z "$IDENTITY_BASE_URL" ]; then
+            echo "::error::IDENTITY_BASE_URL is not configured."
+            exit 1
+          fi
+
+          if [ -z "$TEST_EMAIL" ]; then
+            echo "::error::TEST_EMAIL is not configured."
+            exit 1
+          fi
+
+          if [ -z "$TEST_PASSWORD" ]; then
+            echo "::error::TEST_PASSWORD is not configured."
+            exit 1
+          fi
+
+          echo "PROD test configuration is available."
+
+      - name: TypeScript validation
+        run: npx tsc --noEmit
+
+      - name: Verify PROD smoke test selection
+        run: >
+          npx playwright test
+          --project=api
+          --grep "@smoke"
+          --grep-invert "@dev-only|@data-creation"
+          --list
+
+      - name: Run PROD API smoke tests
+        run: npm run test:api:prod
