@@ -8,10 +8,7 @@ export interface RefreshTokenErrorResponse {
   detail: string;
 }
 
-export function isRefreshTokenErrorResponse(
-  body: unknown
-): body is RefreshTokenErrorResponse {
-
+export function isRefreshTokenErrorResponse(body: unknown): body is RefreshTokenErrorResponse {
   return (
     typeof body === 'object' &&
     body !== null &&

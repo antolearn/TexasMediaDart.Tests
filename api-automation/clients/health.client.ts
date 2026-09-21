@@ -29,9 +29,7 @@ export class HealthClient {
   constructor(private readonly request: APIRequestContext) {}
 
   async validateApiHealth(service: HealthService): Promise<void> {
-    const response = await this.request.get(
-      `${service.baseUrl}/health/api`
-    );
+    const response = await this.request.get(`${service.baseUrl}/health/api`);
 
     expect(response.status()).toBe(200);
 
@@ -43,9 +41,7 @@ export class HealthClient {
   }
 
   async validateDatabaseHealth(service: HealthService): Promise<void> {
-    const response = await this.request.get(
-      `${service.baseUrl}/health/db`
-    );
+    const response = await this.request.get(`${service.baseUrl}/health/db`);
 
     expect(response.status()).toBe(200);
 
@@ -58,9 +54,7 @@ export class HealthClient {
   }
 
   async validateVersionHealth(service: HealthService): Promise<void> {
-    const response = await this.request.get(
-      `${service.baseUrl}/health/version`
-    );
+    const response = await this.request.get(`${service.baseUrl}/health/version`);
 
     expect(response.status()).toBe(200);
 

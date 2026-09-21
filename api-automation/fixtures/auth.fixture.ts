@@ -1,9 +1,9 @@
-import { test as base, expect } from "@playwright/test";
+import { test as base, expect } from '@playwright/test';
 
-import { IdentityApiClient } from "../clients/identity.client";
-import { isLoginResponse } from "../models/login.models";
-import { AuthenticatedUser } from "../models/authenticated-user.models";
-import { UsersApiClient } from "../clients/users.client";
+import { IdentityApiClient } from '../clients/identity.client';
+import { isLoginResponse } from '../models/login.models';
+import { AuthenticatedUser } from '../models/authenticated-user.models';
+import { UsersApiClient } from '../clients/users.client';
 
 type AuthFixtures = {
   identityClient: IdentityApiClient;
@@ -28,24 +28,22 @@ export const test = base.extend<AuthFixtures>({
     const password = process.env.TEST_PASSWORD;
 
     if (!email) {
-      throw new Error("TEST_EMAIL is not configured.");
+      throw new Error('TEST_EMAIL is not configured.');
     }
 
     if (!password) {
-      throw new Error("TEST_PASSWORD is not configured.");
+      throw new Error('TEST_PASSWORD is not configured.');
     }
 
     const loginResult = await identityClient.login({
       email,
-      password,
+      password
     });
 
     expect(loginResult.response.status()).toBe(200);
 
     if (!isLoginResponse(loginResult.body)) {
-      throw new Error(
-        "Expected successful login while creating authenticated fixture.",
-      );
+      throw new Error('Expected successful login while creating authenticated fixture.');
     }
 
     const authenticatedUser: AuthenticatedUser = {
@@ -54,11 +52,11 @@ export const test = base.extend<AuthFixtures>({
       accessToken: loginResult.body.accessToken,
       refreshToken: loginResult.body.refreshToken,
       expiresAtUtc: loginResult.body.expiresAtUtc,
-      refreshTokenExpiresAtUtc: loginResult.body.refreshTokenExpiresAtUtc,
+      refreshTokenExpiresAtUtc: loginResult.body.refreshTokenExpiresAtUtc
     };
 
     await use(authenticatedUser);
-  },
+  }
 });
 
 export { expect };

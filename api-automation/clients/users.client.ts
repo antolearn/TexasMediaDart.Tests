@@ -1,6 +1,6 @@
-import { APIRequestContext, APIResponse } from "@playwright/test";
+import { APIRequestContext, APIResponse } from '@playwright/test';
 
-import { UserSearchParameters, UserSearchResult } from "../models/users.models";
+import { UserSearchParameters, UserSearchResult } from '../models/users.models';
 
 export class UsersApiClient {
   private readonly request: APIRequestContext;
@@ -12,7 +12,7 @@ export class UsersApiClient {
     const baseUrl = process.env.API_BASE_URL;
 
     if (!baseUrl) {
-      throw new Error("API_BASE_URL is not configured.");
+      throw new Error('API_BASE_URL is not configured.');
     }
 
     this.baseUrl = baseUrl;
@@ -20,7 +20,7 @@ export class UsersApiClient {
 
   async searchUsers(
     accessToken: string,
-    parameters: UserSearchParameters = {},
+    parameters: UserSearchParameters = {}
   ): Promise<{
     response: APIResponse;
     body: UserSearchResult;
@@ -49,16 +49,16 @@ export class UsersApiClient {
 
     const response = await this.request.get(`${this.baseUrl}/api/users`, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`
       },
-      params,
+      params
     });
 
     const body = (await response.json()) as UserSearchResult;
 
     return {
       response,
-      body,
+      body
     };
   }
 
@@ -69,8 +69,8 @@ export class UsersApiClient {
   async searchUsersWithInvalidToken(): Promise<APIResponse> {
     return await this.request.get(`${this.baseUrl}/api/users`, {
       headers: {
-        Authorization: "Bearer invalid-token",
-      },
+        Authorization: 'Bearer invalid-token'
+      }
     });
   }
 }

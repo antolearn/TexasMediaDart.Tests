@@ -16,9 +16,7 @@ export interface LoginErrorResponse {
   status: number;
   detail: string;
 }
-export function isLoginResponse(
-  body: LoginResponse | LoginErrorResponse
-): body is LoginResponse {
+export function isLoginResponse(body: LoginResponse | LoginErrorResponse): body is LoginResponse {
   return 'accessToken' in body;
 }
 
