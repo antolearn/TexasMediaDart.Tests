@@ -1,4 +1,4 @@
-name: PROD API Smoke
+name: PROD API Smoke Tests
 
 on:
   workflow_dispatch:
@@ -12,7 +12,9 @@ jobs:
 
     env:
       TEST_ENV: prod
+      API_BASE_URL: ${{ vars.API_BASE_URL }}
       IDENTITY_BASE_URL: ${{ vars.IDENTITY_BASE_URL }}
+      ORGANIZATION_BASE_URL: ${{ vars.ORGANIZATION_BASE_URL }}
       TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
       TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
 
@@ -32,8 +34,18 @@ jobs:
       - name: Validate PROD configuration
         shell: bash
         run: |
+          if [ -z "$API_BASE_URL" ]; then
+            echo "::error::API_BASE_URL is not configured."
+            exit 1
+          fi
+
           if [ -z "$IDENTITY_BASE_URL" ]; then
             echo "::error::IDENTITY_BASE_URL is not configured."
+            exit 1
+          fi
+
+          if [ -z "$ORGANIZATION_BASE_URL" ]; then
+            echo "::error::ORGANIZATION_BASE_URL is not configured."
             exit 1
           fi
 
@@ -51,14 +63,6 @@ jobs:
 
       - name: TypeScript validation
         run: npx tsc --noEmit
-
-      - name: Verify PROD smoke test selection
-        run: >
-          npx playwright test
-          --project=api
-          --grep "@smoke"
-          --grep-invert "@dev-only|@data-creation"
-          --list
 
       - name: Run PROD API smoke tests
         run: npm run test:api:prod
