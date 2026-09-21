@@ -16,7 +16,9 @@ jobs:
 
     env:
       TEST_ENV: dev
+      API_BASE_URL: ${{ vars.API_BASE_URL }}
       IDENTITY_BASE_URL: ${{ vars.IDENTITY_BASE_URL }}
+      ORGANIZATION_BASE_URL: ${{ vars.ORGANIZATION_BASE_URL }}
       TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
       TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
 
@@ -32,6 +34,36 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Validate DEV configuration
+        shell: bash
+        run: |
+          if [ -z "$API_BASE_URL" ]; then
+            echo "::error::API_BASE_URL is not configured."
+            exit 1
+          fi
+
+          if [ -z "$IDENTITY_BASE_URL" ]; then
+            echo "::error::IDENTITY_BASE_URL is not configured."
+            exit 1
+          fi
+
+          if [ -z "$ORGANIZATION_BASE_URL" ]; then
+            echo "::error::ORGANIZATION_BASE_URL is not configured."
+            exit 1
+          fi
+
+          if [ -z "$TEST_EMAIL" ]; then
+            echo "::error::TEST_EMAIL is not configured."
+            exit 1
+          fi
+
+          if [ -z "$TEST_PASSWORD" ]; then
+            echo "::error::TEST_PASSWORD is not configured."
+            exit 1
+          fi
+
+          echo "DEV test configuration is available."
 
       - name: TypeScript validation
         run: npx tsc --noEmit
