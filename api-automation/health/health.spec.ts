@@ -1,8 +1,5 @@
 import { test } from '@playwright/test';
-import {
-  HealthClient,
-  HealthService
-} from '../clients/health.client';
+import { HealthClient, HealthService } from '../clients/health.client';
 
 function requireEnv(name: string): string {
   const value = process.env[name];

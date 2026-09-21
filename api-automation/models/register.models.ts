@@ -13,10 +13,7 @@ export interface RegisterErrorResponse {
   status: number;
   detail: string;
 }
-export function isRegisterErrorResponse(
-  body: unknown
-): body is RegisterErrorResponse {
-
+export function isRegisterErrorResponse(body: unknown): body is RegisterErrorResponse {
   return (
     typeof body === 'object' &&
     body !== null &&
@@ -25,16 +22,8 @@ export function isRegisterErrorResponse(
     'detail' in body
   );
 }
-export function isRegisterResponse(
-  body: unknown
-): body is RegisterResponse {
-
-  return (
-    typeof body === 'object' &&
-    body !== null &&
-    'userId' in body &&
-    'email' in body
-  );
+export function isRegisterResponse(body: unknown): body is RegisterResponse {
+  return typeof body === 'object' && body !== null && 'userId' in body && 'email' in body;
 }
 export interface RegisterValidationErrorResponse {
   title: string;
@@ -45,7 +34,6 @@ export interface RegisterValidationErrorResponse {
 export function isRegisterValidationErrorResponse(
   body: unknown
 ): body is RegisterValidationErrorResponse {
-
   return (
     typeof body === 'object' &&
     body !== null &&
