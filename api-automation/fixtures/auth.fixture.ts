@@ -4,10 +4,12 @@ import { IdentityApiClient } from '../clients/identity.client';
 import { isLoginResponse } from '../models/login.models';
 import { AuthenticatedUser } from '../models/authenticated-user.models';
 import { UsersApiClient } from '../clients/users.client';
+import { OrganizationApiClient } from '../clients/organization.client';
 
 type AuthFixtures = {
   identityClient: IdentityApiClient;
   usersClient: UsersApiClient;
+  organizationClient: OrganizationApiClient;
   authenticatedUser: AuthenticatedUser;
 };
 
@@ -21,6 +23,11 @@ export const test = base.extend<AuthFixtures>({
     const usersClient = new UsersApiClient(request);
 
     await use(usersClient);
+  },
+  organizationClient: async ({ request }, use) => {
+    const organizationClient = new OrganizationApiClient(request);
+
+    await use(organizationClient);
   },
 
   authenticatedUser: async ({ identityClient }, use) => {
