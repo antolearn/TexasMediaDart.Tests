@@ -60,3 +60,8 @@ jobs:
           fi
 
           echo "DEV test configuration is available."
+      - name: TypeScript validation
+        run: npx tsc --noEmit
+
+      - name: Run DEV API regression tests
+        run: npm run test:api:regression:dev
