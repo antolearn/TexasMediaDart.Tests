@@ -29,6 +29,23 @@ export class OrganizationApiClient {
 
     this.baseUrl = baseUrl;
   }
+  async createOrganizationResponse(accessToken: string, name: string): Promise<APIResponse> {
+    return await this.request.post(`${this.baseUrl}/api/organizations`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      data: {
+        name
+      }
+    });
+  }
+  async createOrganizationWithoutToken(name: string): Promise<APIResponse> {
+    return await this.request.post(`${this.baseUrl}/api/organizations`, {
+      data: {
+        name
+      }
+    });
+  }
 
   async getCurrentOrganization(accessToken: string): Promise<{
     response: APIResponse;

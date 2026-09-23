@@ -5,7 +5,69 @@ test.describe('Organization API - Current Organization', () => {
   // Run serially to prevent update/restore operations from interfering
   // with other tests that read the organization at the same time.
   test.describe.configure({ mode: 'serial' });
+  test(
+    'should return 400 when creating organization with empty name',
+    { tag: ['@regression'] },
+    async ({ organizationClient, authenticatedUser }) => {
+      const response = await organizationClient.createOrganizationResponse(
+        authenticatedUser.accessToken,
+        ''
+      );
 
+      expect(response.status()).toBe(400);
+
+      const body = await response.json();
+
+      expect(body.message).toBe('Organization name is required.');
+    }
+  );
+  test(
+    'should return 401 when creating organization without access token',
+    { tag: ['@regression'] },
+    async ({ organizationClient }) => {
+      const response = await organizationClient.createOrganizationWithoutToken(
+        'Unauthorized Organization'
+      );
+
+      expect(response.status()).toBe(401);
+    }
+  );
+  test(
+    'should return 409 when authenticated user already belongs to an organization',
+    { tag: ['@regression'] },
+    async ({ organizationClient, authenticatedUser }) => {
+      const currentResult = await organizationClient.getCurrentOrganization(
+        authenticatedUser.accessToken
+      );
+
+      expect(currentResult.response.status()).toBe(200);
+
+      const originalOrganization = currentResult.body;
+
+      const response = await organizationClient.createOrganizationResponse(
+        authenticatedUser.accessToken,
+        `Duplicate Organization ${Date.now()}`
+      );
+
+      expect(response.status()).toBe(409);
+
+      const body = await response.json();
+
+      expect(body.status).toBe(409);
+      expect(body.title).toBe('Conflict');
+      expect(body.detail).toBe('The authenticated user already belongs to an organization.');
+      expect(body.instance).toBe('/api/organizations');
+
+      // Verify the failed create did not change the user's current organization.
+      const persistedResult = await organizationClient.getCurrentOrganization(
+        authenticatedUser.accessToken
+      );
+
+      expect(persistedResult.response.status()).toBe(200);
+      expect(persistedResult.body.organizationId).toBe(originalOrganization.organizationId);
+      expect(persistedResult.body.name).toBe(originalOrganization.name);
+    }
+  );
   test(
     'should return current organization for authenticated user',
     { tag: ['@smoke', '@regression'] },
