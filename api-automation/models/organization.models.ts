@@ -11,6 +11,10 @@ export interface CurrentOrganization {
   modifiedBy: string | null;
   modifiedUtc: string | null;
 }
+export interface UpdateOrganizationRequest {
+  name: string;
+  isActive: boolean;
+}
 
 export interface UserModulePermission {
   organizationId: string;

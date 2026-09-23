@@ -8,6 +8,7 @@ import {
   RolePermission,
   RoleSearchParameters,
   RoleSearchResult,
+  UpdateOrganizationRequest,
   UpdateRoleRequest,
   UserModulePermission,
   UpdateRolePermissionsRequest
@@ -319,6 +320,45 @@ export class OrganizationApiClient {
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
+    });
+  }
+  async updateCurrentOrganization(
+    accessToken: string,
+    request: UpdateOrganizationRequest
+  ): Promise<{
+    response: APIResponse;
+    body: CurrentOrganization;
+  }> {
+    const response = await this.request.put(`${this.baseUrl}/api/organizations/current`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      data: request
+    });
+
+    const body = (await response.json()) as CurrentOrganization;
+
+    return {
+      response,
+      body
+    };
+  }
+  async updateCurrentOrganizationResponse(
+    accessToken: string,
+    request: UpdateOrganizationRequest
+  ): Promise<APIResponse> {
+    return await this.request.put(`${this.baseUrl}/api/organizations/current`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      data: request
+    });
+  }
+  async updateCurrentOrganizationWithoutToken(
+    request: UpdateOrganizationRequest
+  ): Promise<APIResponse> {
+    return await this.request.put(`${this.baseUrl}/api/organizations/current`, {
+      data: request
     });
   }
 }
