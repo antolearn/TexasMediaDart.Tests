@@ -25,6 +25,134 @@ test.describe('Organization API - Roles', () => {
       expect(ownerRole!.isDeleted).toBe(false);
     }
   );
+  test(
+    'should sort roles by createdUtc descending',
+    { tag: ['@regression'] },
+    async ({ organizationClient, authenticatedUser }) => {
+      const result = await organizationClient.searchRoles(authenticatedUser.accessToken, {
+        sortBy: 'createdUtc',
+        sortDirection: 'desc',
+        pageNumber: 1,
+        pageSize: 100
+      });
+
+      expect(result.response.status()).toBe(200);
+      expect(result.body.items.length).toBeGreaterThan(1);
+
+      const createdDates = result.body.items.map((role) => new Date(role.createdUtc).getTime());
+
+      for (let index = 1; index < createdDates.length; index++) {
+        expect(createdDates[index - 1]).toBeGreaterThanOrEqual(createdDates[index]);
+      }
+    }
+  );
+  test(
+    'should preserve createdUtc sorting across paginated role results',
+    { tag: ['@regression'] },
+    async ({ organizationClient, authenticatedUser }) => {
+      const firstPage = await organizationClient.searchRoles(authenticatedUser.accessToken, {
+        sortBy: 'createdUtc',
+        sortDirection: 'desc',
+        pageNumber: 1,
+        pageSize: 3
+      });
+
+      expect(firstPage.response.status()).toBe(200);
+      expect(firstPage.body.pageNumber).toBe(1);
+      expect(firstPage.body.pageSize).toBe(3);
+      expect(firstPage.body.items.length).toBeGreaterThan(0);
+
+      const secondPage = await organizationClient.searchRoles(authenticatedUser.accessToken, {
+        sortBy: 'createdUtc',
+        sortDirection: 'desc',
+        pageNumber: 2,
+        pageSize: 3
+      });
+
+      expect(secondPage.response.status()).toBe(200);
+      expect(secondPage.body.pageNumber).toBe(2);
+      expect(secondPage.body.pageSize).toBe(3);
+
+      if (secondPage.body.items.length > 0) {
+        const lastRoleOnFirstPage = firstPage.body.items[firstPage.body.items.length - 1];
+
+        const firstRoleOnSecondPage = secondPage.body.items[0];
+
+        expect(new Date(lastRoleOnFirstPage.createdUtc).getTime()).toBeGreaterThanOrEqual(
+          new Date(firstRoleOnSecondPage.createdUtc).getTime()
+        );
+      }
+    }
+  );
+  test(
+    'should sort roles by name ascending and descending',
+    { tag: ['@regression'] },
+    async ({ organizationClient, authenticatedUser }) => {
+      const ascendingResult = await organizationClient.searchRoles(authenticatedUser.accessToken, {
+        sortBy: 'name',
+        sortDirection: 'asc',
+        pageNumber: 1,
+        pageSize: 100
+      });
+
+      expect(ascendingResult.response.status()).toBe(200);
+      expect(ascendingResult.body.items.length).toBeGreaterThan(1);
+
+      const descendingResult = await organizationClient.searchRoles(authenticatedUser.accessToken, {
+        sortBy: 'name',
+        sortDirection: 'desc',
+        pageNumber: 1,
+        pageSize: 100
+      });
+
+      expect(descendingResult.response.status()).toBe(200);
+      expect(descendingResult.body.items.length).toBeGreaterThan(1);
+
+      const ascendingNames = ascendingResult.body.items.map((role) => role.name);
+
+      const descendingNames = descendingResult.body.items.map((role) => role.name);
+
+      expect(descendingNames).toEqual([...ascendingNames].reverse());
+    }
+  );
+  test(
+    'should return 400 for invalid role sorting parameters',
+    { tag: ['@regression'] },
+    async ({ organizationClient, authenticatedUser }) => {
+      const invalidSortByResponse = await organizationClient.searchRolesWithRawParameters(
+        authenticatedUser.accessToken,
+        {
+          sortBy: 'invalidField',
+          sortDirection: 'asc'
+        }
+      );
+
+      expect(invalidSortByResponse.status()).toBe(400);
+
+      const invalidSortByBody = await invalidSortByResponse.json();
+
+      expect(invalidSortByBody.status).toBe(400);
+      expect(invalidSortByBody.detail).toContain(
+        'SortBy must be name, description, or createdUtc.'
+      );
+
+      const missingSortByResponse = await organizationClient.searchRolesWithRawParameters(
+        authenticatedUser.accessToken,
+        {
+          sortDirection: 'desc'
+        }
+      );
+
+      expect(missingSortByResponse.status()).toBe(400);
+
+      const missingSortByBody = await missingSortByResponse.json();
+
+      expect(missingSortByBody.status).toBe(400);
+      expect(missingSortByBody.detail).toContain(
+        'SortBy is required when SortDirection is provided.'
+      );
+    }
+  );
 
   test(
     'should return 401 without access token',
@@ -161,7 +289,46 @@ test.describe('Organization API - Roles', () => {
       expect(deleteResult.body.modifiedBy).toBeTruthy();
       expect(deleteResult.body.modifiedUtc).toBeTruthy();
 
-      // Verify deleted role is no longer accessible
+      // Verify deleted role is excluded from the default search
+      const defaultSearchResult = await organizationClient.searchRoles(
+        authenticatedUser.accessToken,
+        {
+          search: updatedRoleName
+        }
+      );
+
+      expect(defaultSearchResult.response.status()).toBe(200);
+
+      const roleInDefaultSearch = defaultSearchResult.body.items.find(
+        (role) => role.roleId === roleId
+      );
+
+      expect(roleInDefaultSearch).toBeUndefined();
+
+      // Verify deleted role is returned when includeDeleted is enabled
+      const includeDeletedSearchResult = await organizationClient.searchRoles(
+        authenticatedUser.accessToken,
+        {
+          search: updatedRoleName,
+          includeDeleted: true
+        }
+      );
+
+      expect(includeDeletedSearchResult.response.status()).toBe(200);
+
+      const deletedRole = includeDeletedSearchResult.body.items.find(
+        (role) => role.roleId === roleId
+      );
+
+      expect(deletedRole).toBeDefined();
+      expect(deletedRole!.roleId).toBe(roleId);
+      expect(deletedRole!.organizationId).toBe(organizationId);
+      expect(deletedRole!.name).toBe(updatedRoleName);
+      expect(deletedRole!.isSystemRole).toBe(false);
+      expect(deletedRole!.isActive).toBe(false);
+      expect(deletedRole!.isDeleted).toBe(true);
+
+      // Verify deleted role is still unavailable through GET by ID
       const getDeletedResponse = await organizationClient.getRoleByIdResponse(
         authenticatedUser.accessToken,
         roleId
@@ -170,6 +337,7 @@ test.describe('Organization API - Roles', () => {
       expect(getDeletedResponse.status()).toBe(404);
     }
   );
+
   test(
     'should update and persist permissions for a role',
     { tag: ['@regression', '@data-creation'] },
@@ -363,6 +531,7 @@ test.describe('Organization API - Roles', () => {
       expect(deleteResult.body.isDeleted).toBe(true);
     }
   );
+
   test(
     'should replace existing permissions with desired permission state',
     { tag: ['@regression', '@data-creation'] },
@@ -602,6 +771,7 @@ test.describe('Organization API - Roles', () => {
       expect(deleteResult.body.isDeleted).toBe(true);
     }
   );
+
   test(
     'should return 400 when assigning unsupported module permission',
     { tag: ['@regression', '@data-creation'] },
@@ -688,6 +858,7 @@ test.describe('Organization API - Roles', () => {
       expect(deleteResult.body.isDeleted).toBe(true);
     }
   );
+
   test(
     'should return 404 for nonexistent role',
     { tag: ['@regression'] },
@@ -702,6 +873,7 @@ test.describe('Organization API - Roles', () => {
       expect(response.status()).toBe(404);
     }
   );
+
   test(
     'should return 409 when updating a system role',
     { tag: ['@regression'] },
@@ -743,6 +915,7 @@ test.describe('Organization API - Roles', () => {
       expect(getResult.body.isSystemRole).toBe(true);
     }
   );
+
   test(
     'should return 404 when getting permissions for nonexistent role',
     { tag: ['@regression'] },
@@ -757,6 +930,7 @@ test.describe('Organization API - Roles', () => {
       expect(response.status()).toBe(404);
     }
   );
+
   test(
     'should return 409 when updating permissions for a system role',
     { tag: ['@regression'] },
